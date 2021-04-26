@@ -8,43 +8,49 @@ import (
 )
 
 func main() {
-	fmt.Println("hello")
-	encode, err := defaults.NewEncoder([]byte(`12345678`), 2, 1, 4, 1)
+	encode, err := defaults.NewEncoder([]byte(`12345678abcdefghijklmn`), 1, 1, 8, 2)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("NewEncoder err %s \n", err.Error())
 		return
 	}
 
 	decode, err := defaults.NewDecoder(encode.CommonOTI(), encode.SchemeSpecificOTI())
 	if err != nil {
 		fmt.Println(err.Error())
+		return
 	}
 
 	c := make(chan uint8)
 	decode.AddReadyBlockChan(c)
 
 	go func() {
-		num := <-c
-		fmt.Println(num, "is ok")
-		buf := make([]byte, 8, 8)
-		n, err := decode.SourceBlock(num, buf)
-		if err != nil {
-			fmt.Println("wrong", err.Error())
+		for {
+			num := <-c
+			fmt.Println(num, "is ok", decode.SourceBlockSize(num))
+			buf := make([]byte, 32, 32)
+			n, err := decode.SourceBlock(num, buf)
+			if err != nil {
+				fmt.Println("wrong", err.Error())
+				return
+			}
+			fmt.Println(string(buf[:n]))
+			//decode.Close()
 		}
-		fmt.Println(buf[:n])
-		return
 	}()
 
-	for i := 0; i < 5; i++ {
-		buf := make([]byte, 8, 8)
-		writen, err := encode.Encode(0, uint32(i), buf)
-		if err != nil {
-			fmt.Println(err.Error())
-			return
-		}
+	fmt.Println(encode.NumSourceBlocks())
+	for i := 0; i < 3; i++ {
+		for j := 0; j < 12; j++ {
+			buf := make([]byte, 32, 32)
+			writen, err := encode.Encode(uint8(i), uint32(j), buf)
+			if err != nil {
+				fmt.Println("encode--", err.Error(), i, j)
+				return
+			}
 
-		decode.Decode(0, uint32(i), buf[:int(writen)])
-		fmt.Println("success", writen, buf)
+			decode.Decode(uint8(i), uint32(j), buf[:int(writen)])
+			//fmt.Println("success writen", writen, buf, i, j)
+		}
 	}
 
 	time.Sleep(5 * time.Second)

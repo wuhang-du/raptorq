@@ -1,6 +1,10 @@
 package raqserver
 
-import "wuhang-du/raptorq/common"
+import (
+	"wuhang-du/raptorq/common"
+
+	"github.com/harmony-one/go-raptorq/pkg/defaults"
+)
 
 type RaqServer struct {
 	commonOTI     uint64
@@ -19,7 +23,13 @@ func (r *RaqServer) GetRaqInfo() (uint64, uint32) {
 
 func (r *RaqServer) RegisterPiece(uri string, id int64, count int64, infoChan chan []common.PieceInfo) error {
 	//获取源文件
+	info := `duwhabcd`
 	//持续输出piece.
+	_, err := defaults.NewEncoder([]byte(info), 1, 1, 8, 2)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

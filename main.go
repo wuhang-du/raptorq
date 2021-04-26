@@ -1,6 +1,7 @@
 package main
 
 import (
+	"time"
 	"wuhang-du/raptorq/consumer"
 	"wuhang-du/raptorq/microserver"
 	"wuhang-du/raptorq/raqserver"
@@ -12,5 +13,7 @@ func main() {
 	_ = raqserver.NewRaqServer(t)
 	_ = microserver.NewMicroServer(t)
 	c := consumer.NewConsumer(t)
-	c.Start()
+	c.Start(0)
+
+	time.Sleep(10 * time.Second)
 }
